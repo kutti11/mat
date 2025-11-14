@@ -1,0 +1,203 @@
+
+Representation of a Text Document in Vector Space Model and Computing Similarity 
+between two documents. 
+
+
+doc1 = "Machine learning is amazing and fun"
+doc2 = "Deep learning and machine learning are parts of artificial intelligence"
+documents = [doc1, doc2]
+
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+
+vectorizer = TfidfVectorizer()
+
+tfidf_matrix = vectorizer.fit_transform(documents)
+
+print("Vocabulary:", vectorizer.get_feature_names_out())
+
+print("TF-IDF Matrix:\n", tfidf_matrix.toarray())
+
+similarity = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])
+
+print("Cosine Similarity between doc1 and doc2:", similarity[0][0])
+
+
+
+
+
+
+
+Pre-processing of a Text Document: stop word removal and stemming.
+
+
+
+
+
+
+
+
+
+
+
+
+import nltk
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from nltk.stem import PorterStemmer
+
+nltk.download('punkt')
+nltk.download('stopwords')
+
+
+def preprocess_text(text):
+    text = text.lower()
+    words = word_tokenize(text)
+    stop_words = set(stopwords.words('english'))
+    filtered_words = [word for word in words if word.isalnum() and word not in stop_words]
+    stemmer = PorterStemmer()
+    stemmed_words = [stemmer.stem(word) for word in filtered_words]
+    return stemmed_words
+
+text = "Machine learning algorithms are revolutionizing the world of artificial intelligence."
+print("Orginal Text:", text)
+
+processed = preprocess_text(text)
+processed_text = ' '.join(processed)
+
+print("Processed Text:", processed_text)
+print("Preprocessed Words:", processed)
+
+
+
+
+
+
+
+
+  
+Text Document Clustering using K-means. Demonstrate with a standard dataset and compute 
+performance measures- Purity, Precision, Recall and F-measure.
+
+
+
+
+
+
+
+
+
+
+
+import numpy as np
+from sklearn.datasets import fetch_20newsgroups
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.cluster import KMeans
+from sklearn.metrics import precision_score, recall_score, f1_score
+from scipy.stats import mode
+
+# Aditya College of Engineering and Technology (A)
+# Reg.No:
+# Expt. No.:
+# Date:
+# Page No:
+
+categories = ['alt.atheism', 'comp.graphics', 'sci.space', 'talk.religion.misc']
+newsgroups = fetch_20newsgroups(
+    subset='all',
+    categories=categories,
+    remove=('headers', 'footers', 'quotes')
+)
+
+vectorizer = TfidfVectorizer(stop_words='english', max_features=1000)
+X = vectorizer.fit_transform(newsgroups.data)
+y_true = newsgroups.target
+
+k = len(categories)
+kmeans = KMeans(n_clusters=k, random_state=42)
+y_pred = kmeans.fit_predict(X)
+
+def purity_score(y_true, y_pred):
+    clusters = np.unique(y_pred)
+    classes = np.unique(y_true)
+    contingency_matrix = np.zeros((len(clusters), len(classes)))
+
+    for i, cluster in enumerate(clusters):
+        indices = np.where(y_pred == cluster)[0]
+        true_labels = y_true[indices]
+
+        if len(true_labels) == 0:
+            continue
+
+        most_common = mode(true_labels, keepdims=True).mode[0]
+        count = np.sum(true_labels == most_common)
+        j = np.where(classes == most_common)[0][0]
+
+        contingency_matrix[i][j] = count
+
+    return np.sum(np.max(contingency_matrix, axis=1)) / np.sum(contingency_matrix)
+
+
+def map_clusters_to_labels(y_true, y_pred):
+    label_mapping = {}
+
+    for cluster in np.unique(y_pred):
+        indices = np.where(y_pred == cluster)[0]
+        if len(indices) == 0:
+            continue
+        majority_label = mode(y_true[indices], keepdims=True).mode[0]
+        label_mapping[cluster] = majority_label
+
+    mapped_preds = np.array([label_mapping[cluster] for cluster in y_pred])
+    return mapped_preds
+
+
+y_pred_mapped = map_clusters_to_labels(y_true, y_pred)
+
+purity = purity_score(y_true, y_pred)
+precision = precision_score(y_true, y_pred_mapped, average='macro')
+recall = recall_score(y_true, y_pred_mapped, average='macro')
+f1 = f1_score(y_true, y_pred_mapped, average='macro')
+
+print("Purity Score:", round(purity, 4))
+print("Precision:", round(precision, 4))
+print("Recall:", round(recall, 4))
+print("F1-Score:", round(f1, 4))
+
+
+
+
+Implementation of PageRank on Scholarly Citation Network.
+
+
+
+
+
+
+
+# pip install --upgrade numpy scipy network
+
+import networkx as nx
+
+# Example scholarly citation network
+citations = {
+    "Paper1": ["Paper2", "Paper3"],
+    "Paper2": ["Paper3"],
+    "Paper3": ["Paper1"],
+    "Paper4": ["Paper2", "Paper3"],
+    "Paper5": ["Paper3", "Paper4"]
+}
+
+# Build directed graph
+G = nx.DiGraph()
+
+for paper, cited_papers in citations.items():
+    for cited in cited_papers:
+        G.add_edge(paper, cited)
+
+# Compute PageRank (manual computation, no scipy backend needed)
+pagerank_scores = nx.pagerank(G, alpha=0.85, max_iter=100)
+
+print("\nPageRank Scores:")
+for paper, score in pagerank_scores.items():
+    print(f"{paper}: {score:.4f}")

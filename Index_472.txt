@@ -1,0 +1,210 @@
+4)Text Document Clustering using K-means. Demonstrate with a standard dataset and compute
+performance measures- Purity, Precision, Recall and F-measure.
+
+
+import numpy as np
+from sklearn.datasets import fetch_20newsgroups
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.cluster import KMeans
+from sklearn.metrics import precision_score, recall_score, f1_score
+from scipy.stats import mode
+
+categories = ['alt.atheism', 'comp.graphics', 'sci.space', 'talk.religion.misc']
+newsgroups = fetch_20newsgroups(subset='all', categories=categories, remove=('headers', 'footers', 'quotes'))
+
+vectorizer = TfidfVectorizer(stop_words='english', max_features=1000)
+X = vectorizer.fit_transform(newsgroups.data)
+y_true = newsgroups.target
+
+k = len(categories)
+kmeans = KMeans(n_clusters=k, random_state=42)
+y_pred = kmeans.fit_predict(X)
+
+def purity_score(y_true, y_pred):
+    clusters = np.unique(y_pred)
+    classes = np.unique(y_true)
+    contingency_matrix = np.zeros((len(clusters), len(classes)))
+    for i, cluster in enumerate(clusters):
+        indices = np.where(y_pred == cluster)[0]
+        true_labels = y_true[indices]
+        if len(true_labels) == 0:
+            continue
+        most_common = mode(true_labels, keepdims=True).mode[0]
+        count = np.sum(true_labels == most_common)
+        j = np.where(classes == most_common)[0][0]
+        contingency_matrix[i][j] = count
+    return np.sum(np.max(contingency_matrix, axis=1)) / np.sum(contingency_matrix)
+
+def map_clusters_to_labels(y_true, y_pred):
+    label_mapping = {}
+    for cluster in np.unique(y_pred):
+        indices = np.where(y_pred == cluster)[0]
+        if len(indices) == 0:
+            continue
+        majority_label = mode(y_true[indices], keepdims=True).mode[0]
+        label_mapping[cluster] = majority_label
+    mapped_preds = np.array([label_mapping[cluster] for cluster in y_pred])
+    return mapped_preds
+
+y_pred_mapped = map_clusters_to_labels(y_true, y_pred)
+
+purity = purity_score(y_true, y_pred)
+precision = precision_score(y_true, y_pred_mapped, average='macro')
+recall = recall_score(y_true, y_pred_mapped, average='macro')
+f1 = f1_score(y_true, y_pred_mapped, average='macro')
+
+print("Purity Score:", round(purity, 4))
+print("Precision:", round(precision, 4))
+print("Recall:", round(recall, 4))
+print("F1-Score:", round(f1, 4))
+
+
+7)To parse XML text, generate Web graph and compute topic specific page rank Parse XML
+Text
+
+
+import xml.etree.ElementTree as ET
+import numpy as np
+import networkx as nx
+import matplotlib.pyplot as plt
+
+def parse_xml(xml_text):
+    tree = ET.fromstring(xml_text)
+    graph = {}
+    topics_map = {}
+    for page in tree.findall('page'):
+        title = page.find('title').text.strip()
+        links = [link.text.strip() for link in page.findall('link')]
+        topics = page.find('topics').text.strip().split(",") if page.find('topics') is not None else []
+        graph[title] = links
+        topics_map[title] = [t.strip() for t in topics]
+    return graph, topics_map
+
+def build_adj_matrix(graph):
+    pages = list(graph.keys())
+    idx = {page: i for i, page in enumerate(pages)}
+    n = len(pages)
+    M = np.zeros((n, n))
+    for page, links in graph.items():
+        if links:
+            for link in links:
+                if link in idx:
+                    M[idx[link]][idx[page]] = 1 / len(links)
+        else:
+            M[:, idx[page]] = 1 / n
+    return M, pages
+
+def topic_specific_pagerank(M, pages, topics_map, topic, d=0.85, tol=1e-6, max_iter=100):
+    n = len(pages)
+    teleport = np.array([1.0 if topic in topics_map[p] else 0.0 for p in pages])
+    if teleport.sum() == 0:
+        teleport = np.ones(n)
+    teleport = teleport / teleport.sum()
+    r = np.ones(n) / n
+    for i in range(max_iter):
+        r_new = d * M @ r + (1 - d) * teleport
+        if np.linalg.norm(r_new - r, 1) < tol:
+            break
+        r = r_new
+    return dict(zip(pages, r))
+
+def draw_web_graph(graph, topics_map, topic):
+    G = nx.DiGraph()
+    for page, links in graph.items():
+        for link in links:
+            G.add_edge(page, link)
+    node_colors = []
+    for page in G.nodes():
+        if topic in topics_map.get(page, []):
+            node_colors.append("lightgreen")
+        else:
+            node_colors.append("skyblue")
+    plt.figure(figsize=(6, 4))
+    pos = nx.spring_layout(G, seed=42)
+    nx.draw(G, pos, with_labels=True, node_color=node_colors, node_size=1500,
+            font_size=10, arrowsize=15, edge_color="gray")
+    plt.title(f"Web Graph (Highlighted Topic: {topic})")
+    plt.show()
+
+xml_text = '''<web>
+<page>
+<title>PageA</title>
+<link>PageB</link>
+<link>PageC</link>
+<topics>science,education</topics>
+</page>
+<page>
+<title>PageB</title>
+<link>PageC</link>
+<topics>science</topics>
+</page>
+<page>
+<title>PageC</title>
+<topics>sports</topics>
+</page>
+</web>'''
+
+graph, topics_map = parse_xml(xml_text)
+M, pages = build_adj_matrix(graph)
+topic = "science"
+draw_web_graph(graph, topics_map, topic)
+ranks = topic_specific_pagerank(M, pages, topics_map, topic)
+
+print("\nTopic-Specific PageRank (Topic: science):")
+for page, score in sorted(ranks.items(), key=lambda x: -x[1]):
+    print(f"{page}: {score:.4f}")
+
+
+
+2A)Pre-processing of a Text Document: stop word removal and stemming.
+
+
+import nltk
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from nltk.stem import PorterStemmer
+
+nltk.download('punkt')
+nltk.download('stopwords')
+
+def preprocess_text(text):
+    text = text.lower()
+    words = word_tokenize(text)
+    stop_words = set(stopwords.words('english'))
+    filtered_words = [word for word in words if word.isalnum() and word not in stop_words]
+    stemmer = PorterStemmer()
+    stemmed_words = [stemmer.stem(word) for word in filtered_words]
+    return stemmed_words
+
+text = "Machine learning algorithms are revolutionizing the world of artificial intelligence."
+print("Original Text:", text)
+processed = preprocess_text(text)
+processed_text = ' '.join(processed)
+print("Processed Text:", processed_text)
+print("Preprocessed Words:", processed)
+
+
+2B)Implementation of PageRank on Scholarly Citation Network
+
+
+import networkx as nx
+
+citations = {
+    "Paper1": ["Paper2", "Paper3"],
+    "Paper2": ["Paper3"],
+    "Paper3": ["Paper1"],
+    "Paper4": ["Paper2", "Paper3"],
+    "Paper5": ["Paper3", "Paper4"]
+}
+
+G = nx.DiGraph()
+for paper, cited_papers in citations.items():
+    for cited in cited_papers:
+        G.add_edge(paper, cited)
+
+pagerank_scores = nx.pagerank(G, alpha=0.85, max_iter=100)
+
+print("\nPageRank Scores:")
+for paper, score in pagerank_scores.items():
+    print(f"{paper}: {score:.4f}")
+
