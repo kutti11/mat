@@ -1,0 +1,46 @@
+import xml.etree.ElementTree as ET
+import numpy as np
+import networkx as nx
+import matplotlib.pyplot as plt
+
+xml = """<web>
+<page><title>A</title><link>B</link><link>C</link><topics>science,edu</topics></page>
+<page><title>B</title><link>C</link><topics>science</topics></page>
+<page><title>C</title><topics>sports</topics></page>
+</web>"""
+
+tree = ET.fromstring(xml)
+g, topics = {}, {}
+for p in tree.findall('page'):
+    title = p.find('title').text
+    g[title] = [l.text for l in p.findall('link')]
+    topics[title] = (p.find('topics').text or "").split(",")
+
+pages = list(g)
+idx = {p: i for i, p in enumerate(pages)}
+M = np.zeros((len(pages),) * 2)
+for p, links in g.items():
+    for l in links:
+        if l in idx:
+            M[idx[l]][idx[p]] = 1 / len(links)
+
+def tspr(M, topic, d=0.85):
+    n = len(pages)
+    v = np.array([topic in topics[p] for p in pages], float)
+    v = v / v.sum() if v.sum() else np.ones(n) / n
+    r = np.ones(n) / n
+    while True:
+        nr = d * M @ r + (1 - d) * v
+        if np.allclose(r, nr, 1e-6):
+            break
+        r = nr
+    return dict(zip(pages, r))
+
+G = nx.DiGraph(g)
+plt.figure(figsize=(5, 4))
+nx.draw(G, with_labels=True, node_size=1500)
+plt.title("Web Graph")
+plt.show()
+
+for k, v in tspr(M, "science").items():
+    print(k, round(v, 4))
