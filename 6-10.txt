@@ -1,0 +1,143 @@
+
+### **EXPERIMENT – 6**
+
+**AIM:**
+To visualize the structure of diamonds dataset with large data points using hexagon binning.
+
+**CODE:**
+
+```r
+install.packages("hexbin")
+install.packages("vcd")
+library(ggplot2)
+library(hexbin)
+library(vcd)
+
+data("diamonds")
+
+ggplot(diamonds, aes(x = carat, y = price)) +
+  stat_binhex(bins = 50) +
+  scale_fill_gradient(low = "lightblue", high = "darkblue") +
+  labs(title = "Hexbin Plot: Carat vs Price",
+       x = "Carat",
+       y = "Price")
+
+data("HairEyeColor")
+
+hair_eye_df <- as.data.frame(HairEyeColor)
+
+mosaicplot(~ Hair + Eye,
+           data = hair_eye_df,
+           main = "Mosaic Plot: Hair Color vs Eye Color",
+           col = rainbow(8),
+           border = "black")
+```
+
+---
+
+### **EXPERIMENT – 7**
+
+**AIM:**
+To Load Hair Eye Color dataset in R and plot categorical data using mosaic plot.
+
+**CODE:**
+
+```r
+data("HairEyeColor")
+
+HairEyeColor
+
+hair_eye_df <- as.data.frame(HairEyeColor)
+
+mosaicplot(HairEyeColor,
+           main = "Mosaic Plot of Hair Color vs Eye Color",
+           xlab = "Hair Color",
+           ylab = "Eye Color",
+           color = TRUE)
+```
+
+---
+
+### **EXPERIMENT – 8**
+
+**AIM:**
+To Load mtcars dataset in R and visualize data using heat map.
+
+**CODE:**
+
+```r
+data("mtcars")
+
+summary(mtcars)
+
+mtcars_scaled <- scale(mtcars)
+
+heatmap(mtcars_scaled,
+        main = "Heatmap of mtcars Dataset",
+        col = heat.colors(256),
+        scale = "none")
+```
+
+---
+
+### **EXPERIMENT – 9**
+
+**AIM:**
+To install leaflet library and perform different map visualizations.
+
+**CODE:**
+
+```r
+library(leaflet)
+
+leaflet() %>%
+  addTiles() %>%
+  addMarkers(lng = 77.5946, lat = 12.9716, popup = "Bangalore")
+
+leaflet() %>%
+  addTiles() %>%
+  addCircles(lng = 77.1025, lat = 28.7041, radius = 50000, color = "blue", popup = "Delhi")
+
+cities <- data.frame(
+  name = c("Delhi", "Mumbai", "Chennai"),
+  lat = c(28.7041, 19.0760, 13.0827),
+  lng = c(77.1025, 72.8777, 80.2707)
+)
+
+leaflet(cities) %>%
+  addTiles() %>%
+  addMarkers(~lng, ~lat, popup = ~name)
+```
+
+---
+
+### **EXPERIMENT – 10**
+
+**AIM:**
+To Visualize iris dataset using 3d graphs such as scatter3d, cloud, xyplot.
+
+**CODE:**
+
+```r
+library(scatterplot3d)
+library(lattice)
+library(car)
+
+scatterplot3d(iris$Sepal.Length, iris$Petal.Length, iris$Sepal.Width,
+              color = as.numeric(iris$Species),
+              pch = 19,
+              main = "3D Scatter Plot of Iris",
+              xlab = "Sepal Length",
+              ylab = "Petal Length",
+              zlab = "Sepal Width")
+
+cloud(Sepal.Length ~ Petal.Length * Sepal.Width,
+      data = iris,
+      groups = iris$Species,
+      auto.key = TRUE,
+      main = "Cloud Plot: Iris Dataset")
+
+scatter3d(Sepal.Length ~ Petal.Length + Sepal.Width | Species,
+          data = iris,
+          surface = FALSE,
+          grid = FALSE)

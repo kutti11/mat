@@ -1,0 +1,300 @@
+
+
+### **EXPERIMENT – 1(a)**
+
+**AIM:**
+To visualize the death rates in virginia dataset using histograms.
+
+**CODE:**
+
+```r
+data("VADeaths")
+print("VADeaths Dataset:")
+print(VADeaths)
+
+va_df <- as.data.frame(VADeaths)
+str(va_df)
+
+dev.off()
+par(mfrow = c(2, 2),mar=c(4,4,2,1))
+
+hist(va_df$`Rural Male`,
+     main = "Rural Male Death Rate",
+     xlab = "Death Rate",
+     col = "skyblue",
+     border = "black")
+
+hist(va_df$`Rural Female`,
+     main = "Rural Female Death Rate",
+     xlab = "Death Rate",
+     col = "lightgreen",
+     border = "black")
+
+hist(va_df$`Urban Male`,
+     main = "Urban Male Death Rate",
+     xlab = "Death Rate",
+     col = "salmon",
+     border = "black")
+
+hist(va_df$`Urban Female`,
+     main = "Urban Female Death Rate",
+     xlab = "Death Rate",
+     col = "orchid",
+     border = "black")
+
+par(mfrow = c(1, 1))
+```
+
+---
+
+### **EXPERIMENT – 1(b)**
+
+**AIM:**
+To visualize the maximum temperature in La Guardia Airport’s using histogram.
+
+**CODE:**
+
+```r
+data("airquality")
+
+head(airquality)
+
+str(airquality)
+
+hist(airquality$Temp,
+     main = "La Guardia Airport Daily Max Temperature",
+     xlab = "Temperature (°F)",
+     col = "orange",
+     border = "black")
+```
+
+---
+
+### **EXPERIMENT – 2**
+
+**AIM:**
+To visualize the increase in air passengers over a given time period using line chart.
+
+**CODE:**
+
+```r
+data("AirPassengers")
+
+print("Summary of AirPassengers dataset:")
+summary(AirPassengers)
+
+print(paste("Class of dataset:", class(AirPassengers)))
+
+plot(AirPassengers,
+     main = "Monthly International Air Passengers (1949–1960)",
+     xlab = "Year",
+     ylab = "Number of Passengers (in Thousands)",
+     col = "blue",
+     type = "l",
+     lwd = 2)
+```
+
+---
+
+### **EXPERIMENT – 3(a)**
+
+**AIM:**
+To visualize the iris dataset using different bar charts.
+
+**CODE:**
+
+```r
+data("iris")
+
+head(iris)
+
+summary(iris)
+
+species_count <- table(iris$Species)
+
+barplot(species_count,
+        main = "Number of Iris Samples per Species",
+        xlab = "Species",
+        ylab = "Count",
+        col = c("skyblue", "salmon", "lightgreen"),
+        border = "black")
+
+mean_sepal <- aggregate(Sepal.Length ~ Species, data = iris, FUN = mean)
+
+barplot(mean_sepal$Sepal.Length,
+        names.arg = mean_sepal$Species,
+        main = "Mean Sepal Length by Species",
+        xlab = "Species",
+        ylab = "Mean Sepal Length",
+        col = "orange")
+
+iris$SepalGroup <- cut(
+  iris$Sepal.Length,
+  breaks = c(4, 5, 6, 7, 8),
+  labels = c("4-5", "5-6", "6-7", "7-8")
+)
+
+stack_data <- table(iris$SepalGroup, iris$Species)
+
+barplot(stack_data,
+        main = "Stacked Bar Plot: Sepal Length Group by Species",
+        xlab = "Sepal Length Group",
+        ylab = "Count",
+        col = c("red", "green", "blue"),
+        legend = rownames(stack_data),
+        beside = FALSE)
+```
+
+---
+
+### **EXPERIMENT – 3(b)**
+
+**AIM:**
+To visualize ozone concentration in air by loading air quality dataset.
+
+**CODE:**
+
+```r
+data("airquality")
+
+head(airquality)
+
+summary(airquality)
+
+hist(airquality$Ozone,
+     main = "Ozone Concentration in Air",
+     xlab = "Ozone (ppb)",
+     ylab = "Frequency",
+     col = "skyblue",
+     border = "black")
+
+boxplot(airquality$Ozone,
+        main = "Boxplot of Ozone Concentration",
+        ylab = "Ozone (ppb)",
+        col = "orange",
+        border = "brown")
+
+plot(airquality$Ozone,
+     type = "l",
+     main = "Ozone Levels Over Time",
+     xlab = "Day Index",
+     ylab = "Ozone (ppb)",
+     col = "darkgreen",
+     lwd = 2)
+
+points(airquality$Ozone, col = "blue", pch = 16)
+```
+
+---
+
+### **EXPERIMENT – 4(a)**
+
+**AIM:**
+To visualize the iris data using different Box plots including group and also use color palette to represent species.
+
+**CODE:**
+
+```r
+data("iris")
+
+summary(iris)
+
+boxplot(Sepal.Length ~ Species,
+        data = iris,
+        main = "Sepal Length by Species",
+        xlab = "Species",
+        ylab = "Sepal Length (cm)",
+        col = c("lightblue", "salmon", "lightgreen"),
+        border = "darkblue")
+
+boxplot(Petal.Width ~ Species,
+        data = iris,
+        main = "Petal Width by Species",
+        xlab = "Species",
+        ylab = "Petal Width (cm)",
+        col = c("skyblue", "orange", "lightpink"),
+        border = "black")
+
+palette <- rainbow(3)
+
+boxplot(Sepal.Width ~ Species,
+        data = iris,
+        main = "Sepal Width by Species",
+        col = palette,
+        xlab = "Species",
+        ylab = "Sepal Width (cm)")
+```
+
+---
+
+### **EXPERIMENT – 4(b)**
+
+**AIM:**
+To visualize air quality parameters on air quality dataset using box plots.
+
+**CODE:**
+
+```r
+data("airquality")
+
+summary(airquality)
+
+par(mfrow = c(2, 2))
+
+boxplot(airquality$Ozone,
+        main = "Ozone Concentration",
+        ylab = "Ozone (ppb)",
+        col = "lightblue")
+
+boxplot(airquality$Solar.R,
+        main = "Solar Radiation",
+        ylab = "Solar.R (lang)",
+        col = "lightgreen")
+
+boxplot(airquality$Wind,
+        main = "Wind Speed",
+        ylab = "Wind (mph)",
+        col = "lightyellow")
+
+boxplot(airquality$Temp,
+        main = "Temperature",
+        ylab = "Temperature (°F)",
+        col = "lightpink")
+
+par(mfrow = c(1, 1))
+```
+
+---
+
+### **EXPERIMENT – 5**
+
+**AIM:**
+To visualize iris dataset using simple scatter, multivariate scatter plot and visualize multiple variables across each other.
+
+**CODE:**
+
+```r
+data("iris")
+print(iris)
+
+plot(iris$Sepal.Length, iris$Sepal.Width,
+     main = "Scatter Plot: Sepal Length vs Sepal Width",
+     xlab = "Sepal Length (cm)",
+     ylab = "Sepal Width (cm)",
+     col = iris$Species,
+     pch = 19)
+
+legend("topright", legend = levels(iris$Species),
+       col = 1:3, pch = 19)
+
+plot(iris$Sepal.Length, iris$Petal.Length,
+     main = "Multivariate Scatter: Sepal vs Petal Length",
+     xlab = "Sepal Length (cm)",
+     ylab = "Petal Length (cm)",
+     col = iris$Species,
+     pch = 19)
+
+pairs(iris[1:4],
+      main = "Scatter Plot Matrix of Iris Data",
+      col = iris$Species,
+      pch = 19)
